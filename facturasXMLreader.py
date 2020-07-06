@@ -1,88 +1,201 @@
-from xml.etree import cElementTree as ET
 import pandas as pd
+from datetime import date
+import win32api
+
+fechaHoy = date.today()
 
 path = 'D:/Google Drive/LA BANQUETA/PEDIDOS PRODUCTOS/FACTURAS/'
-file = input("Nombre del archivo: ")
-archivo = open(path+file, 'r')
-factura = archivo.readlines()
+
+file = input("Ingrese nombre del archivo o 'exit' para salir: ")
+
+contador = open(path+file,'r')
+lineas = 0
+for line in contador:
+    lineas += 1
+contador.close()
+
+
+archivo = open(path+file,'r')
+info = archivo.readlines()
 archivo.close()
 
+# variables
 texto = ""
-folio = 0
+rut = ''
+ruts = []
+folio =''
+folios = []
 fecha = ''
+fechas = []
 proveedor = ''
+proveedores = []
+ean = ''
 eans = []
-codInterno = []
+codInterno = ''
+codInternos = []
+item = ''
 items = []
-cantidad = []
+unidadMedida = ' '
+unidadMedidas = []
+cantidad = ''
+cantidades = []
+precio = ''
 precios = []
+montoItem = ''
+montoItems = []
+totSinIva = ''
+totSinIvas = []
+iva = ''
+ivas =[]
+excento = ''
+excentos = []
+totConIva = ''
+totConIvas = []
 
-for i in factura:
-    i = i.lstrip()
+for y in range(lineas-1):
+    i = info[y].lstrip()
     if i[0:7] == "<Folio>":
-        i = i.replace("<Folio>", "")
-        i = i.replace("</Folio>", "")
-        i = i.replace("\n", "")
+        i = i.replace("<Folio>","")
+        i = i.replace("</Folio>","")
+        i = i.replace("\n","")
         folio = i
-        i = i + '\n'
-    if i[0:8] == "<FchRef>":
-        i = i.replace("<FchRef>", "")
-        i = i.replace("</FchRef>", "")
+    if i[0:9] == "<FchEmis>":
+        i = i.replace("<FchEmis>", "")
+        i = i.replace("</FchEmis>", "")
         i = i.replace("\n", "")
         fecha = i
-        i = i + '\n'
+    if i[0:11] == "<RUTEmisor>":
+        i = i.replace("<RUTEmisor>","")
+        i = i.replace("</RUTEmisor>","")
+        i = i.replace("\n","")
+        rut = i
     if i[0:8] == "<RznSoc>":
-        i = i.replace("<RznSoc>", "")
-        i = i.replace("</RznSoc>", "")
-        i = i.replace("\n", "")
+        i = i.replace("<RznSoc>","")
+        i = i.replace("</RznSoc>","")
+        i = i.replace("\n","")
         proveedor = i
-        i = i + '\n'
-
+    if i[0:9] == "<MntNeto>":
+        i = i.replace("<MntNeto>","")
+        i = i.replace("</MntNeto>","")
+        i = i.replace("\n","")
+        totSinIva=i
+    if i[0:8] == "<MntExe>":
+        i = i.replace("<MntExe>","")
+        i = i.replace("</MntExe>","")
+        i = i.replace("\n","")
+        excento = i
+    if i[0:5] == "<IVA>":
+        i = i.replace("<IVA>","")
+        i = i.replace("</IVA>","")
+        i = i.replace("\n","")
+        iva = i
+    if i[0:10] == "<MntTotal>":
+        i = i.replace("<MntTotal>","")
+        i = i.replace("</MntTotal>","")
+        i = i.replace("\n","")
+        totConIva=i
+    
+    # detalles:
     if i[0:11] == "<VlrCodigo>":
-        i = i.replace("<VlrCodigo>", "")
-        i = i.replace("</VlrCodigo>", "")
-        i = i.replace("\n", "")
-        if len(i) <= 8:
-            codInterno.append(i)
-        else:
-            eans.append(i)
-        i = i + '\n'
+        i = i.replace("<VlrCodigo>","")
+        i = i.replace("</VlrCodigo>","")
+        i = i.replace("\n","")
+        if len(i) <=8:
+            codInterno = i
+        else: 
+            ean = i
     if i[0:9] == "<NmbItem>":
-        i = i.replace("<NmbItem>", "")
-        i = i.replace("</NmbItem>", "")
-        i = i.replace("\n", "")
-        items.append(i)
-        i = i + '\n'
+        i = i.replace("<NmbItem>","")
+        i = i.replace("</NmbItem>","")
+        i = i.replace("\n","")
+        item = i
     if i[0:9] == "<QtyItem>":
-        i = i.replace("<QtyItem>", "")
-        i = i.replace("</QtyItem>", "")
-        i = i.replace("\n", "")
-        cantidad.append(int(i))
-        i = i + '\n'
+        i = i.replace("<QtyItem>","")
+        i = i.replace("</QtyItem>","")
+        i = i.replace("\n","")
+        cantidad = i
+    if i[0:10] == "<UnmdItem>":
+        i = i.replace("<UnmdItem>","")
+        i = i.replace("</UnmdItem>","")
+        i = i.replace("\n","")
+        unidadMedida = i
     if i[0:9] == "<PrcItem>":
-        i = i.replace("<PrcItem>", "")
-        i = i.replace("</PrcItem>", "")
-        i = i.replace("\n", "")
-        precios.append(int(i))
-        i = i + '\n'
+        i = i.replace("<PrcItem>","")
+        i = i.replace("</PrcItem>","")
+        i = i.replace("\n","")
+        precio = i
+    if i[0:11] == "<MontoItem>":
+        i = i.replace("<MontoItem>","")
+        i = i.replace("</MontoItem>","")
+        i = i.replace("\n","")
+        montoItem = i
 
-    texto += i
-
+    #sube factura
+    if i[0:10] == "</Detalle>":
+        folios.append(folio)
+        fechas.append(fecha)
+        ruts.append(rut)
+        proveedores.append(proveedor)
+        totSinIvas.append(totSinIva)
+        excentos.append(excento)
+        ivas.append(iva)
+        totConIvas.append(totConIva)
+        codInternos.append(codInterno)
+        eans.append(ean)
+        items.append(item)
+        cantidades.append(cantidad)
+        unidadMedidas.append(unidadMedida)
+        precios.append(precio)
+        montoItems.append(montoItem)
+        
+        
+    #blanquea next factura
+    if i[0:12] == '</Documento>':
+        fechaFinal = fecha
+        proveedorFinal = proveedor
+        folioFinal = folio
+        rut = ''
+        folio =''
+        fecha = ''
+        proveedor = ''
+        codInterno = ''
+        ean = ''
+        item = ''
+        unidadMedida = ' '
+        cantidad = ''
+        precio = ''
+        montoItem = ''
+        totSinIva = ''
+        iva = ''
+        excento = ''
+        totConIva = ''
+        
+        
 data = pd.DataFrame(
     {
-       # "EAN": eans,
-        "CodigoInterno": codInterno,
-        "Descripción": items,
-        "Cantidad": cantidad,
-        "Precio": precios,
-        "Venta": 0,
-        "Fecha": fecha,
-        "Factura": folio,
-        "Proveedor": proveedor
+        "RUT": ruts,
+        "Razón Social":proveedores,
+        "Fecha" : fechas,
+        "Factura": folios,
+        "EAN" : eans,
+        "CodigoInterno" : codInternos,
+        "Descripción" : items,
+        "Cantidad" : cantidades,
+        "Unidad Medida":unidadMedidas,
+        "Precio Item" : precios,
+        "Monto Item": montoItems,
+        "MontoFactSinIva": totSinIvas,
+        "IVA":ivas,
+        "Excento":excentos,
+        "MontoFactConIva": totConIvas
+        
     }
 )
-data["Venta"] = data["Precio"]*data["Cantidad"]
-data.head(15)
-
-
-data.to_excel(path+'{} {} - Factura {}.xlsx'.format(fecha,proveedor,folio))
+if proveedores[0] != proveedores[-1]:
+    data.to_excel(path+'{} Resumen Facturas.xlsx'.format(fechaHoy.isoformat()))
+    mensajelog = 'Archivo: {} Resumen Facturas.xlsx creado exitosamente'.format(fechaHoy.isoformat())
+    win32api.MessageBox(0, mensajelog, 'Mensaje')
+else:
+    data.to_excel(path+'{} {} - Factura {}.xlsx'.format(fechaFinal,proveedorFinal,folioFinal))
+    mensajelog = 'Archivo: {} {} - Factura {}.xlsx creado exitosamente'.format(fechaFinal,proveedorFinal,folioFinal)
+    win32api.MessageBox(0, mensajelog, 'Mensaje')
