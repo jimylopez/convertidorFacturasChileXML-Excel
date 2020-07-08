@@ -4,7 +4,7 @@ import win32api
 
 fechaHoy = date.today()
 
-path = 'D:/Google Drive/LA BANQUETA/PEDIDOS PRODUCTOS/FACTURAS/'
+path = 'C:/TU RUTA DE FACTURAS/XML'
 
 file = input("Ingrese nombre del archivo o 'exit' para salir: ")
 
